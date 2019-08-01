@@ -17,14 +17,13 @@ setup(
     include_package_data=True,
     url='https://github.com/maazhe/mdwpy',
     classifiers=[
-        "License :: Beerware",
         "Natural Language :: French",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.5",
-        "Topic :: Download",
-        "Topic :: Python",
-        "Topic :: Multiprocessing",
-        "Topic :: Download fast",
+        # "Topic :: Download",
+        # "Topic :: Python",
+        # "Topic :: Multiprocessing",
+        # "Topic :: Download fast",
     ],
     # entry_points = {
     #     'console_scripts': [
