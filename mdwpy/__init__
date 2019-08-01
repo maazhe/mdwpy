@@ -6,6 +6,8 @@
     It split the file into parts and download each part on different process
 """
 
-__version__ = "1.0.0"
+name = "mdwpy"
 
-from multi_process_downloader import Downloader
+__version__ = "1.1.0"
+
+from mdwpy.downloader import Downloader

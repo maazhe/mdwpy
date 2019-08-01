@@ -7,23 +7,24 @@ import mdwpy
  
 setup(
     name='mdwpy',
-    version=mdwpy.__version__,
+    version='1.1.0',
     packages=find_packages(),
     author='Matthieu Bossennec',
-    author_email="matthieubossennec@gmail.com",
+    # author_email='',
     description="Multi process downloader in python",
     long_description=open('README.md').read(),
     # install_requires= ,
     include_package_data=True,
-    url='http://github.com/maazhe',
+    url='https://github.com/maazhe/mdwpy',
     classifiers=[
-        "Programming Language :: Python",
-        "Development Status :: 1 - Planning",
         "License :: Beerware",
         "Natural Language :: French",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.5",
-        "Topic :: Communications",
+        "Topic :: Download",
+        "Topic :: Python",
+        "Topic :: Multiprocessing",
+        "Topic :: Download fast",
     ],
     # entry_points = {
     #     'console_scripts': [

@@ -6,7 +6,7 @@
  
     Usage:
  
-    >>> from spyd_downloader import Downloader
+    >>> from mdwpy import Downloader
     >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory)
     >>> downloader.run()
 """
@@ -37,6 +37,8 @@ class Downloader:
             self.auth = HTTPBasicAuth(kwargs.get('usr', None), kwargs.get('pwd', None))
             self.directory = kwargs.get('directory', './')
 
+            self.create_if_missing()
+
             self.file_parts = self.get_file_parts()
 
         except Exception as e:
@@ -51,10 +53,10 @@ class Downloader:
         with futures.ProcessPoolExecutor() as executor:
             for size, file in executor.map(self.download_parts, self.file_parts):
                 if size:
-                    logger.info('Process Success for {}'.format(file))
+                    logger.debug('Process Success for {}'.format(file))
                     success += 1
                 else:
-                    logger.info('Processing Error for {}'.format(file))
+                    logger.debug('Processing Error for {}'.format(file))
 
         if success == len(self.file_parts):  
           self.build_file()
@@ -62,10 +64,18 @@ class Downloader:
           self.clean_data()
           raise Exception('Error during download')
 
+
+    def create_if_missing(self):
+        try:
+            if not os.path.exists(self.directory):
+                os.makedirs(self.directory)
+        except Exception as e:
+            logger.error('%s already existing %s ', self.directory, e)
+
     # CLEAN_DATA METHOD 
     # clean the filesystem to avoid error
     def clean_data(self):
-        logger.info('--- Entering clean_data method ---')
+        logger.debug('--- Entering clean_data method ---')
         for p in self.file_parts:
             if os.path.exists(p['directory'] + p['filename']):
                 os.remove(p['directory'] + p['filename'])
@@ -75,16 +85,17 @@ class Downloader:
     # BUILD_FILE METHOD
     # build the final file using the downloaded file parts
     def build_file(self):
-        logger.info('--- Entering build_file method ---')
+        logger.debug('--- Entering build_file method ---')
         with open(self.directory + self.filename, 'wb') as f:
             for p in self.file_parts:
                 f.write(open(self.directory + p['filename'], 'rb').read())
                 os.remove(self.directory + p['filename'])
+        logger.info("File downloaded")
 
     # DOWNLOAD_PARTS METHOD 
     # download a file part, retry download until complete or until reach max try
     def download_parts(self, file_part):
-        logger.info('--- Entering download_parts method ---')
+        logger.debug('--- Entering download_parts method ---')
 
         filesize = 0
         expected_size = file_part['size']
@@ -110,16 +121,16 @@ class Downloader:
     # GET_FILE_SIZE METHOD 
     # return the size of the complete file
     def get_file_size(self):
-        logger.info('--- Entering get_file_size method ---')
+        logger.debug('--- Entering get_file_size method ---')
         req = requests.head(self.url, stream=True, auth=self.auth)
         return int(req.headers['Content-Length'])
 
     # GET_FILE_PARTS METHOD 
     # return a list of each file part information as a dict
     def get_file_parts(self):
-        logger.info('--- Entering get_file_parts method ---')
+        logger.debug('--- Entering get_file_parts method ---')
         size = self.get_file_size()
-        logger.info('Filesize is {0}'.format(size))
+        logger.debug('Filesize is {0}'.format(size))
         core_nb = len(os.sched_getaffinity(0))
         part_size = int(size / core_nb)
         file_parts = []
