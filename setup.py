@@ -10,7 +10,7 @@ setup(
     version='1.1.0',
     packages=find_packages(),
     author='Matthieu Bossennec',
-    # author_email='',
+    author_email='mymail@protonmail.com',
     description="Multi process downloader in python",
     long_description=open('README.md').read(),
     # install_requires= ,
