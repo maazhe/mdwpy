@@ -6,16 +6,17 @@
  
     Usage:
  
-    >>> from mdwpy import Downloader
-    >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory)
+    >>> from mdwpy.downloader import Downloader
+    >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory, progress=True)
     >>> downloader.run()
 """
 
 import concurrent.futures as futures
 import os
-import shutil
+# import shutil
 import requests
 from requests.auth import HTTPBasicAuth
+import sys
 
 ## LOGGER / Optional
 import logging
@@ -30,6 +31,7 @@ class Downloader:
         try:
             self.url = kwargs.get('url', None)
             self.filename = kwargs.get('filename', 'default_filename')
+            self.progressbar = kwargs.get('progress', False)
 
             if not self.url:
                 raise Exception('Url should be defined')
@@ -38,7 +40,6 @@ class Downloader:
             self.directory = kwargs.get('directory', './')
 
             self.create_if_missing()
-
             self.file_parts = self.get_file_parts()
 
         except Exception as e:
@@ -64,7 +65,8 @@ class Downloader:
           self.clean_data()
           raise Exception('Error during download')
 
-
+    ## CREATE IF MISSING METHOD
+    # Create target directory if it is not existing
     def create_if_missing(self):
         try:
             if not os.path.exists(self.directory):
@@ -77,8 +79,8 @@ class Downloader:
     def clean_data(self):
         logger.debug('--- Entering clean_data method ---')
         for p in self.file_parts:
-            if os.path.exists(p['directory'] + p['filename']):
-                os.remove(p['directory'] + p['filename'])
+            if os.path.exists(self.directory + p['filename']):
+                os.remove(self.directory + p['filename'])
         if os.path.exists(self.directory + self.filename):
             os.remove(self.directory + self.filename)
 
@@ -90,7 +92,7 @@ class Downloader:
             for p in self.file_parts:
                 f.write(open(self.directory + p['filename'], 'rb').read())
                 os.remove(self.directory + p['filename'])
-        logger.info("File downloaded")
+        logger.info("\nFile downloaded")
 
     # DOWNLOAD_PARTS METHOD 
     # download a file part, retry download until complete or until reach max try
@@ -104,16 +106,30 @@ class Downloader:
         # Set count_try to 10
         while(filesize != expected_size and count_try < 10):
             
-            if os.path.exists(file_part['directory'] + file_part['filename']):
-                filesize = os.path.getsize(file_part['directory'] + file_part['filename'])
+            if os.path.exists(self.directory + file_part['filename']):
+                filesize = os.path.getsize(self.directory + file_part['filename'])
             
             headers = {'Range': 'bytes=%d-%d' % (file_part['start_pos'] + filesize, file_part['end_pos'])}
-            req = requests.get(file_part['url'], headers=headers, stream=True, auth=file_part['auth'])
+            
+            with open(self.directory + file_part['filename'], 'ab') as f:
+                req = requests.get(self.url, headers=headers, stream=True, auth=self.auth)
+                # shutil.copyfileobj(req.raw, f)
+            
+                total_length = req.headers.get('content-length')
+                if total_length is None: # no content length header
+                    f.write(req.content)
+                else:
+                    dl = 0
+                    total_length = int(total_length)
+                    for data in req.iter_content(chunk_size=4096):
+                        dl += len(data)
+                        f.write(data)
+                        if (self.progressbar):
+                            done = int(50 * dl / total_length)
+                            sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)))
+                            sys.stdout.flush()
 
-            with open(file_part['directory'] + file_part['filename'], 'ab') as f:
-                shutil.copyfileobj(req.raw, f)
-
-            filesize = os.path.getsize(file_part['directory'] + file_part['filename'])
+            filesize = os.path.getsize(self.directory + file_part['filename'])
             count_try += 1
         
         return filesize, file_part['filename']
@@ -149,9 +165,6 @@ class Downloader:
                 'start_pos': start_pos,
                 'end_pos' : end_pos,
                 'size' : p_size,
-                'filename' : self.filename + '.' + str(i),
-                'directory': self.directory,
-                'auth': self.auth,
-                'url': self.url
+                'filename' : self.filename + '.' + str(i)
             })
         return file_parts

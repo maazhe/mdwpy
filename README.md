@@ -10,8 +10,8 @@ It split the file into parts and download each part on different process
 
 ## USAGE
 
-    >>> from mdwpy import Downloader
-    >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory)
+    >>> from mdwpy.downloader import Downloader
+    >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory, progress=True)
     >>> downloader.run()
 
 ## LICENCE
