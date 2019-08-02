@@ -92,7 +92,8 @@ class Downloader:
             for p in self.file_parts:
                 f.write(open(self.directory + p['filename'], 'rb').read())
                 os.remove(self.directory + p['filename'])
-        logger.info("\nFile downloaded")
+        print("\n")
+        logger.info("--- File downloaded ---")
 
     # DOWNLOAD_PARTS METHOD 
     # download a file part, retry download until complete or until reach max try
