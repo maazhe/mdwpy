@@ -14,6 +14,8 @@ It split the file into parts and download each part on different process
     >>> downloader = Downloader(url=url, filename=filename, usr= usr, pwd=pwd, directory=directory, progress=True)
     >>> downloader.run()
 
+![Exemple](out.gif)
+
 ## LICENCE
 
 Licence [BEERWARE](https://spdx.org/licenses/Beerware.html)
