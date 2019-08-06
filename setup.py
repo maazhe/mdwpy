@@ -3,11 +3,9 @@
  
 from setuptools import setup, find_packages
  
-import mdwpy
- 
 setup(
     name='mdwpy',
-    version='1.2.0',
+    version='1.2.1',
     packages=find_packages(),
     author='Matthieu Bossennec',
     author_email='mymail@protonmail.com',
